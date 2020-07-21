@@ -1,0 +1,9 @@
+---
+version: '3'
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+  redis:
+    image: redis:alpine
