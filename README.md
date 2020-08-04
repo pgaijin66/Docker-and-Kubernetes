@@ -1,6 +1,8 @@
-# Learning resource for Docker certified associate
+# Learning resource for Docker certified associate 2020 with k8s
 
 I bundled this for the preperation of docker certified associate.
+Since docker certified associate 2020 exam also asks for k8s questions as well. I have included k8s topics which will
+be asked in the exam.
 
 # Docker cCertified Associate exam format
 #### Orchestration (25% of the Exam)
@@ -10,14 +12,7 @@ I bundled this for the preperation of docker certified associate.
 #### Security (15% of the Exam)
 #### Storage and Volumes (10% of the Exam)
 
-# Exam preperations questions
-
-1. Ports allowed by firewall and iptables for docker swarm communication
-```
-TCP port 2377 for cluster management communications
-TCP and UDP port 7946 for communication among nodes	
-```
-2. Docker secrets
-```
-Docker secrets can be used only by swarm not standalone containers.  They are encrypted during transit and at rest. Are mounted to container filesystem directly. Can be used for storing username and password
-```
+## Make sure you are aware about the DOMC exam type and format (~ 33 DOMC question can't be changed)
+Practice DOMC exam from here: https://sei.caveon.com/launchpad/docker-domc-practice-exam-world-geography/domc-practice
+## ~13 normal MCQ question which can be changed
+MCQs are same as previous
