@@ -37,3 +37,102 @@ In production environment, always use the yaml file
 2. Change review process
 3. Provides source of record on what is live within the kubernetes cluster
 4. Easier to troubleshoot changes with version
+
+## Creating k8s object
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mywebserver
+spec:
+  containers:
+  - name: mywebserver
+    image: nginx
+```
+
+apiVersion => Version of API that you want to use. Choosing which API you want to use depends on the Kind of k8s object you want to use. Since Pod is in version 1 or v1 API group so we put apiVersion 1. Path to see the available objects you go to /api/v1/
+
+Kind => This specifies which kind of k8s Object we want to create. In Bove code we are creating a k8s object called Pod.
+
+metadata => Uniquely identified k8s object (Pod) in given namespace.
+
+spec => It specifies desired state of the k8s object which is Pod. You can find what specs in k8s objects from k8s documentation page. It provides you template required to create a pod.
+
+containers => This specifies which container we want to run, and which image to use to run the container from.
+
+### To see all list of api-resources
+```
+kubectl api-resources
+
+NAME                               SHORTNAMES     APIGROUP                       NAMESPACED   KIND
+bindings                                                                         true         Binding
+componentstatuses                  cs                                            false        ComponentStatus
+ersistentvolumes                  pv                                            false         PersistentVolume
+pods                               po                                            true         Pod
+podtemplates                                                                     true         PodTemplate
+```
+
+If you want to see in depth information about api resources we issue command "kubectl explain API_RESOURCE_NAME"
+```
+kubectl explain pod
+
+KIND:     Pod
+VERSION:  v1
+
+DESCRIPTION:
+     Pod is a collection of containers that can run on a host. This resource is
+     created by clients and scheduled onto hosts.
+
+FIELDS:
+   apiVersion   <string>
+     APIVersion defines the versioned schema of this representation of an
+     object. Servers should convert recognized schemas to the latest internal
+     value, and may reject unrecognized values. More info:
+     https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+
+   kind <string>
+     Kind is a string value representing the REST resource this object
+     represents. Servers may infer this from the endpoint the client submits
+     requests to. Cannot be updated. In CamelCase. More info:
+     https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+
+   metadata     <Object>
+     Standard object's metadata. More info:
+     https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+
+   spec <Object>
+     Specification of the desired behavior of the pod. More info:
+```
+
+This will give you information about the api resource and also the url where you can go to read more about it. Some time the URL might be broken so needs to manually navigate through it.
+
+Now let's create k8s object using yaml file. Add following code in pod2.yaml file
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginxwebserver
+  labels:
+    name: nginxwebserver
+spec:
+  containers:
+  - name: myapp
+    image: nginx
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+```
+
+Now run the yaml file using 
+```
+kubectl apply -f pod2.yaml
+```
+
+The stages of pod creation in k8s different some of them are:
+1. ContainerCreating
+2. Running
+3. Pending
+4. Terminating
+
+If you do a kubectl get pods, you can see the status of k8s object creation step.

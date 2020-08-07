@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-pod
+spec:
+  containers:
+  - name: config-pod
+    image: nginx:alpine
+    ports:
+      - containerPort: 80
+    volumeMounts:
+      - name: config-pod
+        mountPath: /etc/config
+  volumes:
+  - name: config-pod
+    configMap:
+      name: dev-properties
