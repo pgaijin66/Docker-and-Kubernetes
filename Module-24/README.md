@@ -46,9 +46,7 @@ docker network rm my-net
 
 ## CNM uses following:
 1. Sandbox : Isolated unit containing all networking components associate with a single container using namespaces
-2. Endpoint : Connect sadbox to a network Each sandbox can have multiple 
-
-
+2. Endpoint : Connect sadbox to a network Each sandbox can have multiple endpoints
 3. Network : Collection of endpoints connected together to one another
 
 ## Docker uses
@@ -66,13 +64,13 @@ docker network rm my-net
 You can use --net=DRIVER
 
 ### Host network
-It allows container to use thost network stack directly. Containers directly use host network interface. All the containers on the host using the host network driver share the same network namepace. Can be used for one or only few containers on a single host. Container network interface are directly connected to the host network interface
+It allows container to use the host network stack directly. Containers directly use host network interface. All the containers on the host using the host network driver share the same network namepace. Can be used for one or only few containers on a single host. Container network interface are directly connected to the host network interface
 ```
 docker container run -d --rm --name nginx --net host nginx
 ```
 
 ### Bridge network
-It uses linux brdige interfaces to provide connectivity to containers and host. This is the default drive for container running on a single host (not in swarm). It createas default linux bridge network called bridge9. Containers automatically connect to tihs if no other network is specified. Use case is isolated networking among containers on single host.
+It uses linux brdige interfaces to provide connectivity to containers and host. This is the default driver for container running on a single host (not in swarm). It createas default linux bridge network called bridge0. Containers automatically connect to tihs if no other network is specified. Use case is isolated networking among containers on single host.
 
 
 create network
@@ -117,7 +115,7 @@ docker service create --network my-overlay-network --name overlay-service --repl
 
 
 ### MACLVAN network
-It help lightweight implementation by connecting container interface directly to host interface. container interface connect to MAC VLAN and then MAVVLAN interafce connects to host network interface Harder to configure and greater dependency between MACVLAN and txternal network.
+It help lightweight implementation by connecting container interface directly to host interface. container interface connect to MAC VLAN and then MACVLAN interafce connects to host network interface Harder to configure and greater dependency between MACVLAN and external network.
 
 Use case: When there is a need for extremely low latency or a need for containers with IP addresses in the external submet.
 
@@ -152,13 +150,13 @@ Is is a docker network implementation of an embedded DNS server, allowing contai
 Containers can communicate with other container and services using services or container name or network alias
 
 ```
-docker container run --name nginx --network my-net --network-alias my-nginx-alias nginx
+docker container run --name nginx --network my-net -p 80:80 --network-alias my-nginx-alias nginx
 
 ```
 Now create another continaer and try to connect to it using container network alias.
 
 ```
-docker exec my-net-busybox curl my-net-alias:80
+docker exec my-net-busybox curl my-nginx-alias:80
 ```
 
 Creating aliasses and connecting using network aliases

@@ -14,4 +14,4 @@ spec:
   volumes:
   - name: config-pod
     configMap:
-      name: dev-properties
+      name: dev-properties44
