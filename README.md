@@ -253,30 +253,89 @@ docker logs SERVICE_NAME
 
 
 ● Describe how a Dockerized application communicates with legacy systems.
+```
+Using container name alias and EDNS
+```
+
 ● Describe how to deploy containerized workloads as Kubernetes pods and deployments.
+
 ● Describe how to provide configuration to Kubernetes pods using configMaps and secrets.
+```
+
+```
 
 # Domain 2: Image Creation, Management, and Registry (20% of exam)
 ### Content may include the following:
 ● Describe the use of Dockerfile.
+```
+docker build -t myimage .
+docker tag IMAGE_NAME:TAG IMAGE_ID
+```
+
 ● Describe options, such as add, copy, volumes, expose, entry point.
+```
+ADD and COPY : Add tar and url 
+VOLUME : mount volume
+EXPOSE: Intent to use port
+ENTRYPOINT: 
+
+```
 ● Identify and display the main parts of a Dockerfile.
+```
+docker image history IMAGE_ID
+```
 ● Describe and demonstrate how to create an efficient image via a Dockerfile.
+```
+Multi-stage build
+```
+
 ● Describe and demonstrate how to use CLI commands to manage images, such as list,
 delete, prune, rmi.
+```
+docker image ls
+docker image rm IMAGE_ID
+docker image prune -a
+```
 ● Describe and demonstrate how to inspect images and report specific attributes using filter
 and format
+
+
 ● Describe and demonstrate how to tag an image. 
 ● Describe and demonstrate how to apply a file to create a Docker image.
 ● Describe and demonstrate how to display layers of a Docker image
+```
+docker image history IMAGE_NAME
+docker inspect 
+```
 ● Describe and demonstrate how to modify an image to a single layer.
+```
+docker export CONTAINER_NAME | docker import - IMAGE_NAME
+```
 ● Describe and demonstrate registry functions.
 ● Deploy a registry.
 ● Log into a registry.
+```
+docker login REGISTRY_URL
+```
+
 ● Utilize search in a registry.
+```
+docker search IMAGE_NAME
+```
 ● Push an image to a registry.
+```
+docker push REPOSITORY/IMAGE:TAG
+```
+
 ● Sign an image in a registry.
+```
+DCT = Docker Content Trust
+```
+
 ● Pull and delete images from a registry.
+```
+docker pull
+```
 
 # Domain 3: Installation and Configuration (15% of exam)
 ### Content may include the following:
