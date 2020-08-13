@@ -62,6 +62,15 @@ If you have 3 manager node, you can maintain quorum in case you lose 1 manager n
 
 In order to maintain quorum, you can still maintain quorum if you lose (N-1)/2 manager nodes where N is the total number of master node.
 
+```
+If the swarm loses the quorum of managers, the swarm cannot perform management tasks. If your swarm has multiple managers, always have more than two. To maintain quorum, a majority of managers must be available. An odd number of managers is recommended, because the next even number does not make the quorum easier to keep. For instance, whether you have 3 or 4 managers, you can still only lose 1 manager and maintain the quorum. If you have 5 or 6 managers, you can still only lose two.
+Even if a swarm loses the quorum of managers, swarm tasks on existing worker nodes continue to run. However, swarm nodes cannot be added, updated, or removed, and new or existing tasks cannot be started, stopped, moved, or updated.
+
+The best way to recover from losing the quorum is to bring the failed nodes back online. If you can't do that, the only way to recover from this state is to use the --force-new-cluster action from a manager node. This removes all managers except the manager the command was run from. The quorum is achieved because there is now only one manager. Promote nodes to be managers until you have the desired number of managers.
+
+docker swarm init --force-new-cluster --advertise-addr node01:2377
+```
+
 ● Describe the difference between running a container and running a service.
 
 Container runs a single instance of image.
@@ -243,19 +252,74 @@ View existing node lables
 docker node inspect --pretty NODE
 ```
 
+```
+
+# apply node label (key w/no value or type)
+docker node update --label-add foo --label-add bar worker1
+docker node update --label-add type=queue worker1
+
+# placement of service using node
+docker service create \
+--replicas 9 \
+--name redis_2 \
+--placement-pref 'spread=node.labels.datacenter' \
+--placement-pref 'spread=node.labels.rack' \ redis:3.0.6
+```
+
 ● Describe and demonstrate how to use templates with “docker service create”.
+It is use to provide dynamic values during service creation. Templates can be used to give somewhat dynamic values to some flags with docker service create
+
+--hostname
+--env
+--mount
+
+```
+# pass in --hostname, --mount, or --env & use Go syntax
+docker service create --name hosttempl \
+--hostname="{{.Node.Hostname}}-{{.Node.ID}}-{{.Service.Name}}" \
+busybox top
+```
+
+```
+docker service create --name node-hostname --env NODE_HOSTNAME="{{.Node.Hostname}}" --replicas 3 nginx
+```
 
 
 ● Identify the steps needed to troubleshoot a service not deploying.
 ```
-docker logs SERVICE_NAME
+First of all, make sure at least one node is not paused or drained, there is enough memory available to meet the value defined in the service, and check the service constraints defined (could make a service be in "pending" state).
+
+Then get a task ID with
+docker service ps <service-name>.
+
+Next, it is useful to check meta data with
+docker inspect <task-id>
+
+In particular, Error message before container start is in the status field, and then reconfirm whether it was started with the intended parameters.
+
+If the task has container ID, it was abnormally exited after starting the container, so check the log of the container with
+docker logs <container-id>
 ```
 
 
 ● Describe how a Dockerized application communicates with legacy systems.
 ```
-Using container name alias and EDNS
+Using container name port, network, ENDS (container name and alias)
 ```
+```
+# publish ports via --publish or -p to map container port to host port
+-p 8080:80 #80 for container & 8080 for host
+
+# attach it to a network on creation or after
+--network
+docker network connect
+
+# inherits DNS of docker daemon unless you set
+--dns
+--dns-search
+--dns-opt
+```
+
 
 ● Describe how to deploy containerized workloads as Kubernetes pods and deployments.
 
@@ -277,16 +341,34 @@ docker tag IMAGE_NAME:TAG IMAGE_ID
 ADD and COPY : Add tar and url 
 VOLUME : mount volume
 EXPOSE: Intent to use port
-ENTRYPOINT: 
+ENTRYPOINT: It helps to make container executable
 
 ```
 ● Identify and display the main parts of a Dockerfile.
 ```
 docker image history IMAGE_ID
+
+FROM Sets the Base Image for subsequent instructions build stage (must be first line and at least once).
+RUN execute any commands in a new layer on top of the current image and commit the results.
+CMD provide defaults for an executing container.
+EXPOSE informs Docker that the container listens on the specified network ports at runtime. NOTE: does not actually make ports accessible.
+ENV sets environment variable.
+ADD copies new files, directories or remote file to container. Invalidates caches. Avoid ADD and use COPY instead.
+COPY copies new files or directories to container. Note that this only copies as root, so you have to chown manually regardless of your USER / WORKDIR setting.
+ENTRYPOINT configures a container that will run as an executable.
+VOLUME creates a mount point for externally mounted volumes or other containers.
+USER sets the user name for following RUN / CMD / ENTRYPOINT commands.
+WORKDIR sets the working directory.
+ARG defines a build-time variable.
+ONBUILD adds a trigger instruction when the image is used as the base for another build.
+STOPSIGNAL sets the system call signal that will be sent to the container to exit.
+LABEL apply key/value metadata to your images, containers, or daemons.
 ```
 ● Describe and demonstrate how to create an efficient image via a Dockerfile.
 ```
 Multi-stage build
+
+Should generate containers that are as ephemeral as possible. Image should be as small as possible. Build context should be within a given folder. String RUN commands together with backslashes.
 ```
 
 ● Describe and demonstrate how to use CLI commands to manage images, such as list,
@@ -300,7 +382,11 @@ docker image prune -a
 and format
 
 
-● Describe and demonstrate how to tag an image. 
+● Describe and demonstrate how to tag an image.
+```
+docker image tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+```
+
 ● Describe and demonstrate how to apply a file to create a Docker image.
 ● Describe and demonstrate how to display layers of a Docker image
 ```
@@ -311,8 +397,23 @@ docker inspect
 ```
 docker export CONTAINER_NAME | docker import - IMAGE_NAME
 ```
+```
+#Without rebuilding
+-create a container from the image: docker create
+-export the container to a flattened tar: docker container export
+-load the image back: docker image import
+
+#With rebuilding
+See the --squash option of docker build
+```
+
 ● Describe and demonstrate registry functions.
 ● Deploy a registry.
+```
+Docker Trusted Registry (DTR) is a commercial product that enables complete image management workflow, featuring LDAP integration, image signing, security scanning, and integration with Universal Control Plane. DTR is offered as an add-on to Docker Enterprise subscriptions of Standard or higher.
+
+docker run -d -p 5000:5000 --name registry registry:2
+```
 ● Log into a registry.
 ```
 docker login REGISTRY_URL
@@ -321,32 +422,64 @@ docker login REGISTRY_URL
 ● Utilize search in a registry.
 ```
 docker search IMAGE_NAME
+
+docker search --filter "is-official=true" --filter "stars=3" busybox
 ```
 ● Push an image to a registry.
 ```
 docker push REPOSITORY/IMAGE:TAG
+
+docker image push [OPTIONS] NAME[:TAG]
+# NAME including registry endpoint (also built with it in the name)
 ```
 
 ● Sign an image in a registry.
 ```
 DCT = Docker Content Trust
+
+export DOCKER_CONTENT_TRUST=1
+docker push <dtr-domain>/<repository>/<image>:<tag>
 ```
 
 ● Pull and delete images from a registry.
 ```
-docker pull
+docker login REGISTRY_URL
+docker pull IMAGE:TAG
+
+You can delete an image from the Docker Hub by deleting individual tags in your repository in the tags area.
 ```
 
 # Domain 3: Installation and Configuration (15% of exam)
 ### Content may include the following:
 ● Describe sizing requirements for installation.
-● Describe and demonstrate the setup of repo, selection of a storage driver, and installation
-of the Docker engine on multiple platforms.
+● Describe and demonstrate the setup of repo, selection of a storage driver, and installation of the Docker engine on multiple platforms.
 ● Describe and demonstrate configuration of logging drivers (splunk, journald, etc.).
+
+You can use log drive using flags --log-driver and --log-opt
+OR
+/etc/docker/daemon.json
+```
+{
+	"log-driver":"json-file",
+	"log-opts":{
+		"max-size":"15m"
+	}
+}
+```
 ● Describe and demonstrate how to set up swarm, configure managers, add nodes, and
 setup the backup schedule.
+
+Backup swarm
+Stop docker
+backup content of /var/lib/docker/swarm
+start docker
+
+
 ● Describe and demonstrate how to create and manage user and teams.
 ● Describe and demonstrate how to configure the Docker daemon to start on boot.
+```
+systemctl enable dockerd
+```
 ● Describe and demonstrate how to use certificate-based client-server authentication to
 ensure a Docker daemon has the rights to access images on a registry.
 ● Describe the use of namespaces, cgroups, and certificate configuration.
