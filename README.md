@@ -560,6 +560,7 @@ These are two ways in whih we can control the amount fo resource that can be ass
 
 Request: Resource Guaranteed to pod
 Limits: Makes sure that container does not take node resources above a specific value.
+```
 resources:
 	requests:
 		memory: "64Mi"
@@ -567,8 +568,12 @@ resources:
 	limits:
 		memory: "128Mi"
 		cpu: "1"
+```
+
 Check resource limits
+```
 kubectl describe node NODENAME
+```
 Scheduler
 k8s scheduler decides the ideal node to run the pod depending on the requests and limits.
 
@@ -585,14 +590,20 @@ Labels and selectors in k8s
 Add labels to pods to define which environment they are from.
 
 List pods on only dev environment
+```
 kubectl get pods -l env=dev
+```
 Adding label to pod
+```
 kubectl label pods POD1_NAME env=dev
 kubectl label pods POD2_NAME env=prod
+```
 env=dev is the label
 
 Show labels
+```
 kubectl get pods --show-labels
+```
 We add labels to k8s object in metadata section.
 
 ● Taints and tolerations
@@ -601,22 +612,25 @@ Taints
 Taints are used to repel the pods from a specific node. If taint has been applied to node, and pod is scheduled to worker node, it will not the pod on tainted worker node.
 
 Check the taint flag on the output
-
+```
 kubectl describe WORKERNODE
+```
 Apply taint so that pods are not scheduled in the tainted worker node.
-
+```
 kubectl taint nodes NODENAME key=value:NoSchedule
+```
 Toleration
 In order to pass pods on the tainted worker node, we need to have a pass. This is called toleration
 
 This pass is called Toleration
 
 You pass toleration to the yaml file when we create a deployment file with key, operator and effect,
-
+```
 tolerations:
 - key: "key"
   operator: "Exists"
   effect: "NoSchedule"
+```
 
 ● Describe how to provide configuration to Kubernetes pods using configMaps and secrets.
 
