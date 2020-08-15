@@ -18,6 +18,12 @@
 
 # Domain 1: Orchestration (25% of exam)
 ### Content may include the following:
+● Update image of swarm service.
+
+```
+docker swarm update --image NEW_IMAGE:TAG SERVICE_NAME
+```
+
 ● Complete the setup of a swarm mode cluster, with managers and worker nodes
 
 Set up manager node
@@ -42,6 +48,11 @@ running services under swarm.
 
 ```
 docker service create --name CONTAINER_NAMW --replicas 1 IMAGE_NAME
+```
+Placement constraints
+```
+docker service create --name webserver --constraint node.label.region==blr nginx
+docker service create --name webserver --constraint node.label.region~=blr nginx
 ```
 
 List service running on swarm
@@ -188,6 +199,12 @@ Display port
 ```
 docker ps
 ```
+● Drain swarm node and make it active.
+
+```
+docker node update --availability drain NODE_NAME
+docker node update --availability active NODE_NAME
+```
 
 ● Mount volumes.
 
@@ -220,6 +237,10 @@ docker container run -dt --name mynginx --mount type=volume,source=my-volume,tar
 ● Describe and demonstrate how to run replicated and global services.
 ```
 docker service create --name SERVICE_NAME --mode=global IMAGE
+
+Replicated service will hav N number of containers defined with the --replica flag
+
+Global service will create 1 container in every node of the cluster.
 ```
 
 
@@ -235,6 +256,7 @@ docker node ls
 Adding lable to node
 ```
 docker node update --label-add LABEL=VALUE NODE
+docker node update --label-add region=sydney WORKER_NODE_ID
 ```
 
 ```
@@ -286,8 +308,14 @@ docker service create --name node-hostname --env NODE_HOSTNAME="{{.Node.Hostname
 
 
 ● Identify the steps needed to troubleshoot a service not deploying.
+
+Use docker system events to get real time information from your server.
 ```
-First of all, make sure at least one node is not paused or drained, there is enough memory available to meet the value defined in the service, and check the service constraints defined (could make a service be in "pending" state).
+First of all, make sure at least one node is not paused or drained,
+
+If there is enough memory available to meet the value defined in the service
+
+If check the service constraints defined (could make a service be in "pending" state).
 
 Then get a task ID with
 docker service ps <service-name>.
@@ -330,13 +358,71 @@ docker network connect
 
 # Domain 2: Image Creation, Management, and Registry (20% of exam)
 ### Content may include the following:
+
+● Immutable in DTR
+
+Enable immutable set to repository > setting and add immutability
+
+● DTR cache
+
+Used to decrease amount of time to pull image. You can set up DTR cache at different location
+
+● DTR garbage collection
+
+Can configure DTR to automatically deleted unused images layers thus saving disk space
+
+● DTR HA
+
+Scale horizontally
+Make use of centralized storage
+
+For DTR = 3 dedicated nodes
+For UCP = 3 dedicated nodes
+
+● Oschestrator types of UDP
+
+UCP uses swarm and k8s
+
+from cli
+```
+docker node update --label-add com.docker.ucp.orchestrator.kubernetes=true NODE_ID
+```
+
+● Storage driver in DTR
+
+By default DTR stores in filesyste, can configure to store in external storage backend.
+
+● Supported storage systems in DTR
+
+NFS
+BIND mount 
+volume
+S3
+Google cloud
+
+● DTR web hook
+
+Con configure DTR to automatically post events notifications to webhook URL of choosing
+
+● Accessing insecure registry.
+
+By default docker will not allow you to perform operation with insecure registry. You can override by adding following to /etc/docker/daemon.json
+
+```
+{
+    ""insecure-registries:["myregistry.com:5000"]
+}
+```
+
 ● Describe the use of Dockerfile.
+
 ```
 docker build -t myimage .
 docker tag IMAGE_NAME:TAG IMAGE_ID
 ```
 
 ● Describe options, such as add, copy, volumes, expose, entry point.
+
 ```
 ADD and COPY : Add tar and url 
 VOLUME : mount volume
@@ -344,7 +430,9 @@ EXPOSE: Intent to use port
 ENTRYPOINT: It helps to make container executable
 
 ```
+
 ● Identify and display the main parts of a Dockerfile.
+
 ```
 docker image history IMAGE_ID
 
@@ -364,7 +452,9 @@ ONBUILD adds a trigger instruction when the image is used as the base for anothe
 STOPSIGNAL sets the system call signal that will be sent to the container to exit.
 LABEL apply key/value metadata to your images, containers, or daemons.
 ```
+
 ● Describe and demonstrate how to create an efficient image via a Dockerfile.
+
 ```
 Multi-stage build
 
@@ -373,30 +463,38 @@ Should generate containers that are as ephemeral as possible. Image should be as
 
 ● Describe and demonstrate how to use CLI commands to manage images, such as list,
 delete, prune, rmi.
+
 ```
 docker image ls
 docker image rm IMAGE_ID
 docker image prune -a
 ```
+
 ● Describe and demonstrate how to inspect images and report specific attributes using filter
 and format
 
 
 ● Describe and demonstrate how to tag an image.
+
 ```
 docker image tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
 ```
 
 ● Describe and demonstrate how to apply a file to create a Docker image.
+
 ● Describe and demonstrate how to display layers of a Docker image
+
 ```
 docker image history IMAGE_NAME
 docker inspect 
 ```
+
 ● Describe and demonstrate how to modify an image to a single layer.
+
 ```
 docker export CONTAINER_NAME | docker import - IMAGE_NAME
 ```
+
 ```
 #Without rebuilding
 -create a container from the image: docker create
@@ -408,24 +506,32 @@ See the --squash option of docker build
 ```
 
 ● Describe and demonstrate registry functions.
+
 ● Deploy a registry.
+
 ```
 Docker Trusted Registry (DTR) is a commercial product that enables complete image management workflow, featuring LDAP integration, image signing, security scanning, and integration with Universal Control Plane. DTR is offered as an add-on to Docker Enterprise subscriptions of Standard or higher.
 
 docker run -d -p 5000:5000 --name registry registry:2
 ```
+
 ● Log into a registry.
+
 ```
 docker login REGISTRY_URL
 ```
 
 ● Utilize search in a registry.
+
 ```
 docker search IMAGE_NAME
 
 docker search --filter "is-official=true" --filter "stars=3" busybox
 ```
+
 ● Push an image to a registry.
+
+First tag image with the DNS name of the registry then push
 ```
 docker push REPOSITORY/IMAGE:TAG
 
@@ -434,6 +540,7 @@ docker image push [OPTIONS] NAME[:TAG]
 ```
 
 ● Sign an image in a registry.
+
 ```
 DCT = Docker Content Trust
 
@@ -442,6 +549,7 @@ docker push <dtr-domain>/<repository>/<image>:<tag>
 ```
 
 ● Pull and delete images from a registry.
+
 ```
 docker login REGISTRY_URL
 docker pull IMAGE:TAG
@@ -452,9 +560,16 @@ You can delete an image from the Docker Hub by deleting individual tags in your 
 # Domain 3: Installation and Configuration (15% of exam)
 ### Content may include the following:
 ● Describe sizing requirements for installation.
+
 ● Describe and demonstrate the setup of repo, selection of a storage driver, and installation of the Docker engine on multiple platforms.
+
 ● Describe and demonstrate configuration of logging drivers (splunk, journald, etc.).
 
+```
+{
+  "storage-driver": "aufs"
+}
+```
 You can use log drive using flags --log-driver and --log-opt
 OR
 /etc/docker/daemon.json
@@ -476,17 +591,58 @@ start docker
 
 
 ● Describe and demonstrate how to create and manage user and teams.
+
 ● Describe and demonstrate how to configure the Docker daemon to start on boot.
+
 ```
 systemctl enable dockerd
 ```
 ● Describe and demonstrate how to use certificate-based client-server authentication to
 ensure a Docker daemon has the rights to access images on a registry.
+
+
 ● Describe the use of namespaces, cgroups, and certificate configuration.
+USR name space is not enabled by default.
+
+```
+Namespaces
+MNT
+UTS
+IPC
+USR
+NET
+
+Cgroups
+docker container run -dt --name constraint01 --cpus=1.5 busybox sh
+docker container run -dt --name constraint02 --cpuset-cpus=0,1 busybox sh
+```
+Limiting CPI
+```
+--cpus=<value> number of CPU for container
+--cpuset-cpus= , limit specific CPU or cores a container can use
+```
 ● Describe and interpret errors to troubleshoot installation issues without assistance.
+
 ● Describe and demonstrate the steps to deploy the Docker engine, UCP, and DTR on AWS
 and on-premises in an HA configuration.
+
 ● Describe and demonstrate how to configure backups for UCP and DTR. 
+
+DTR backup does not backup things related to users/organizations/team
+
+DTR backups raft keys, membershio, services, networks, configs, secrets
+
+```
+use backup command. Run backup DTR with backup command
+
+DTR backup backs up configuration and image metadata. It does not backup user and organizations. It also does not backup docker images stored in your registry.
+
+Users and organizations can be backup during UCP backup. 
+```
+```
+docker run --log-driver none -i --rm docker/dtr backup --ucp-url https://172.31.40.237 -ucp-insecure-tls --ucp-username admin --ucp-password YOUR-PASSWORD-HERE > backup.tar
+```
+
 
 # Domain 4: Networking (15% of exam)
 ### Content may include the following:
@@ -514,30 +670,223 @@ connectivity issues between containers.
 
 # Domain 5: Security (15% of exam)
 ### Content may include the following:
+
+● Secure communication between container using IPSEC tunnel
+
+```
+docker network create --opt encrypted --driver overlay 
+docker network create -o encrypted --driver overlay
+```
+
 ● Describe security administration and tasks.
+
 ● Describe the process of signing an image.
+
+```
+DCT
+```
+
 ● Describe default engine security.
+
 ● Describe swarm default security.
+
 ● Describe MTLS.
+
 ● Describe identity roles.
+
 ● Compare and contrast UCP workers and managers.
+
+● What is service routing mesh ?
+
+```
+Even if the container is not running on host, you can access the service from node ip and port.
+```
+
 ● Describe the process to use external certificates with UCP and DTR.
+
+```
+--external-ca flag of docker swarm init
+```
+
 ● Describe and demonstrate that an image passes a security scan.
+
 ● Describe and demonstrate how to enable Docker Content Trust.
+
+```
+DOCKER_CONTENT_TRUST=1
+```
+
 ● Describe and demonstrate how to configure RBAC with UCP.
+
+```
+Subject, roles and collections
+Subject container user, team and organization.
+Roles containers w?R access
+Collections are the docker objects like nodes, swarm, service etc
+```
+
 ● Describe and demonstrate how to integrate UCP with LDAP/AD. 
+
+```
+LDAP for central authentication
+
+In UCP admin, under authentication/authorization you can enable LDAP with LDAP creds.
+```
+
 ● Describe and demonstrate how to create UCP client bundles.
+
+```
+A client bundle is a groupd of certificates downloadeable directly from docker unversal control plane (UCP)
+
+Create in UCP using laptop
+Login to remove container from your laptop without SSH (via API)
+
+Create Client Bundle in UCP and download it
+
+Copy client bundle to the container
+```
 
 # Domain 6: Storage and Volumes (10% of exam)
 ### Content may include the following:
 ● Identify the correct graph drivers to uses with various operating systems.
+
 ● Describe and demonstrate how to configure devicemapper.
+
+```
+Stop docker service
+
+edit /etc/docker/daemon.json
+
+{
+  "storage-driver": "devicemapper"
+}
+```
+
 ● Compare and contrast object and block storage and when they should be used.
+
+Object storage: overlay and aufs
+
+Block storage: zfs, btrfs
+
 ● Describe how an application is composed of layers and where these layers reside on the
 filesystem.
+
 ● Describe the use of volumes are used with Docker for persistent storage.
+
+```
+docker container run -dt --name mynginx -v /root/index:/usr/share/nginx/html nginx
+
+docker container run -dt --name mynginx --mount type=bind,source=/root/index,target=/usr/share/nginx/html nginx
+```
+
 ● Identify the steps to take to clean up unused images on a filesystem and DTR.
 ● Describe and demonstrate how storage can be used across cluster nodes.
+
 ● Describe how to provision persistent storage to a Kubernetes pod using persistentVolumes.
+
+On disk file in caontianer are ephemeral
+
+k8s supports EBSm cinder, glusterfs, local, nfs etc as volume
+
+hostPath mounts directory from the hosts directory to pod
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demopod-volume
+spec:
+  containers:
+  - image: nginx
+    name: test-container
+    volumeMounts:
+    - mountPath: /data
+      name: first-volume
+  volumes:
+  - name: first-volume
+    hostPath:
+      path: /mydata
+      type: Directory
+```
+
+```
+kubectl apply -f <yaml>
+kubectl exec -it POD_NAME bash 
+```
+
 ● Describe the relationship between container storage interface drivers, storageClass,
 persistentVolumeClaim and volume objects in Kubernetes. 
+
+Persistent Volume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage class.
+
+Every volume which is created can be of different types.
+
+This can be taken care by the storage administrator or OPS Team.
+
+
+eg: 
+volume 1 size: small speed: fast
+Voume 2 size: med speed: Flast
+
+Persistent Volume Claim (PVC) is the request for the storage by user.
+
+Within the claim, user need to specify the size of the volume along with access mode.
+
+PV and PVC
+
+
+1. SA create PV (pv.yaml)
+```
+apiVersion: v1
+kind: persistentVolume
+metadata:
+  name: block-pv
+spec:
+  StorageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /tmp/data
+```
+
+2. Deverloper can raise a claim (i want a specific types of PV) (pvc.yaml)
+```
+apiVersion: v1
+kind: persistentVolumeClaim
+metadata:
+  name: pvc
+spec:
+  StorageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+```
+
+```
+kubectl apply -f pvc.yaml
+kubectl get pvc
+```
+
+3. Reference that clain with the PodSpec file.
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-pvc
+spec:
+  containers:
+     - name: app
+       image: nginx
+       volumeMounts:
+       - mountPath: /data
+         name: my-volume
+  volumes:
+    - name: my-volume
+      persistentVolumeClaim:
+        claimName: pvcs
+```
