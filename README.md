@@ -351,10 +351,310 @@ docker network connect
 
 ● Describe how to deploy containerized workloads as Kubernetes pods and deployments.
 
-● Describe how to provide configuration to Kubernetes pods using configMaps and secrets.
 ```
+kubectl run nginx --image=nginx
+kubectl exec --it mywebserver -- /bin/bash
+kubectl delete pod POD_NAME
+kubectl get pods --show-labels
+kubectl delete rs REPLICASET_NAME
+kubectl descibe describe deployments nginx-deployment
+kubectl rollout history deployment.v1.apps/nginx-deployment
+kubectl rollout history deployment.v1.apps/nginx-deployment --revision 1
+kubectl create secret TYPE NAME DATA
+kubectl create secret generic firstsecret --from-literal=dbpass=mypassword123
+kubectl get secrets
+kubectl create configmap dev-config --from-lliteral=app.mem-2068
+kubectl create configmap dev-properties --from-file=dev.properties
+kubectl describe configmap dev-config    
 
 ```
+
+Pod
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginxwebserver
+  labels:
+    name: nginxwebserver
+spec:
+  containers:
+  - name: myapp
+    image: nginx
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+```
+
+Replica set
+```
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  # Selector should match the labels associated with pods
+  selector:
+    matchLabels:
+    # This is for replica set to count how many replicas of replicaset is running
+      tier: frontend
+  # Using template you do not need to specify apiVersion and Kind
+  template:
+    metadata:
+      labels:
+        tier: frontend
+    spec:
+      containers:
+      - name: php-redis
+        image: gcr.io/google_samples/gb-frontend:v3
+```
+
+Deployments
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+```
+
+Service
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  ports:
+  - port: 8080
+    targetPort: 80
+```
+
+Endpoints
+```
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: nginx-service
+subsets:
+  - addresses:
+      - ip: 10.244.0.32
+      - ip: 10.244.0.241
+    ports:
+      - port: 80
+```
+
+Service and Nodeport
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.13.12
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-app
+  name: nginx-svc
+  namespace: default
+spec:
+  type: ClusterIP  # use ClusterIP as type here Can use NodePort
+  ports:
+    - port: 80
+  selector:
+    app: nginx-app
+```
+
+DaemonSet
+```
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-elasticsearch
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-logging
+spec:
+  selector:
+    matchLabels:
+      name: fluentd-elasticsearch
+  template:
+    metadata:
+      labels:
+        name: fluentd-elasticsearch
+    spec:
+      tolerations:
+      # this toleration is to have the daemonset runnable on master nodes
+      # remove it if your masters can't run pods
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: fluentd-elasticsearch
+        image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+```
+
+● Resource requests and limits
+THis is use to specify the resource limitation while creating pods on specific nodes.
+
+This also checks which nodes has enough capacity to run the application.
+
+These are two ways in whih we can control the amount fo resource that can be assigned to a pod (CPU, Memory)
+
+Request: Resource Guaranteed to pod
+Limits: Makes sure that container does not take node resources above a specific value.
+resources:
+	requests:
+		memory: "64Mi"
+		cpu: "0.5"
+	limits:
+		memory: "128Mi"
+		cpu: "1"
+Check resource limits
+kubectl describe node NODENAME
+Scheduler
+k8s scheduler decides the ideal node to run the pod depending on the requests and limits.
+
+If your pod requires 8GN of RAM, however there are no ndoes within your cluster which has 8GB RAM, then your pod will never get scheduled and pod will go to PENDING state.
+
+If you check logs of pod, it will show you insufficient cpu.
+
+● Labels and Selectors
+Labels are key/value pairs that are attached to objects, such as pods.
+name: database env: prod
+
+Selectors allows us to filters objects based on labels
+Labels and selectors in k8s
+Add labels to pods to define which environment they are from.
+
+List pods on only dev environment
+kubectl get pods -l env=dev
+Adding label to pod
+kubectl label pods POD1_NAME env=dev
+kubectl label pods POD2_NAME env=prod
+env=dev is the label
+
+Show labels
+kubectl get pods --show-labels
+We add labels to k8s object in metadata section.
+
+● Taints and tolerations
+
+Taints
+Taints are used to repel the pods from a specific node. If taint has been applied to node, and pod is scheduled to worker node, it will not the pod on tainted worker node.
+
+Check the taint flag on the output
+
+kubectl describe WORKERNODE
+Apply taint so that pods are not scheduled in the tainted worker node.
+
+kubectl taint nodes NODENAME key=value:NoSchedule
+Toleration
+In order to pass pods on the tainted worker node, we need to have a pass. This is called toleration
+
+This pass is called Toleration
+
+You pass toleration to the yaml file when we create a deployment file with key, operator and effect,
+
+tolerations:
+- key: "key"
+  operator: "Exists"
+  effect: "NoSchedule"
+
+● Describe how to provide configuration to Kubernetes pods using configMaps and secrets.
+
+ConfigMap
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-pod
+spec:
+  containers:
+  - name: config-pod
+    image: nginx:alpine
+    ports:
+      - containerPort: 80
+    volumeMounts:
+      - name: config-pod
+        mountPath: /etc/config
+  volumes:
+  - name: config-pod
+    configMap:
+      name: dev-properties
+```
+
+
+Secret
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  # Username and password should be bas64 encoded
+  username: ZGJhZG1pbg==
+  password: MTIzNDUK
+```
+
 
 # Domain 2: Image Creation, Management, and Registry (20% of exam)
 ### Content may include the following:

@@ -82,6 +82,13 @@ Apply taint so that pods are not scheduled in the tainted worker node.
 kubectl taint nodes NODENAME key=value:NoSchedule
 ```
 
+There are two types of taints
+1. NoSchedule
+	No pod will be able to schedule onto node1 unless it has matching toleration. Pods that are already running will continue to run.
+
+2. NoExecute
+	Pod is evicted from the node if it is already running on the node.
+
 ## Toleration
 
 In order to pass pods on the tainted worker node, we need to have a pass. This is called toleration
