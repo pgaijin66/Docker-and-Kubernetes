@@ -1,22 +1,7 @@
-# Learning resource for Docker certified associate 2020 with Kubernetes (k8s)
+# Learning resource for Docker with Kubernetes (k8s)
 
-##### Docker certified associate exam 2020 has changed its exam content has made some changes on exam procedires. Make sure you are aware of the changes.
-##### Since docker certified associate 2020 exam also asks k8s questions as well. I have included k8s topics which will be asked in the exam.
+### Domain 1: Orchestration (25% of exam)
 
-## Make sure you are aware about the DOMC exam type and format (~ 33 DOMC question can't be changed)
-#### Practice DOMC exam from here: https://sei.caveon.com/launchpad/docker-domc-practice-exam-world-geography/domc-practice
-## ~13 normal MCQ question which can be changed
-#### MCQs are same as previous
-
-# Docker cCertified Associate exam format
-#### Orchestration (25% of the Exam)
-#### Image Creation, Management, and Registry (20% of the Exam)
-#### Installation and Configuration (15% of the Exam)
-#### Networking (15% of the Exam)
-#### Security (15% of the Exam)
-#### Storage and Volumes (10% of the Exam)
-
-# Domain 1: Orchestration (25% of exam)
 ### Content may include the following:
 ● Update image of swarm service.
 
