@@ -1,0 +1,19 @@
+version: "3.7"
+networks:
+  swarm-net:
+    driver: overlay
+services:
+  visualiser:
+    image: dockersamples/visualizer
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - swarm-net
+    ports:
+      - "9080:8080"
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
