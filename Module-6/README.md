@@ -21,11 +21,12 @@ sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io
 
 ***INITIALIZE SWARM***
+
 sudo docker swarm init --advertise-addr 10.128.0.2
 
 sudo docker swarm join-token worker
 
-sudo docker swarm join --token SWMTKN-1-1evb2v6k1iiqjwzoeenuc98oyijoe1v5yud7e13pqe6lzigped-eolt1lft2iz3bpb4g37t9bsix 10.128.0.2:2377
+sudo docker swarm join --token ......
 
 sudo docker node ls
 
