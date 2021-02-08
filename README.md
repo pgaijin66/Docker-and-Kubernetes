@@ -1,6 +1,6 @@
 # A primer on Docker and Kubernetes (k8s)
 
-### A compiled learning resource for DevOps and Site Reliability Engineers.
+### A compiled learning resource for DevOps Engineer and Site Reliability Engineering enthusiasts.
 
 This is a collection of docker and kubernetes learning resources compiled for ease of use and to be treated as just an open source knowedgebase.Feel free to PR for any change or upgrades.
 
