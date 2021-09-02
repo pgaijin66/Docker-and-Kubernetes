@@ -1,4 +1,4 @@
-# A primer on Docker and Kubernetes (k8s)
+# A primer on Docker and Kubernetes
 
 ### A compiled learning resource for DevOps Engineer and Site Reliability Engineering enthusiasts.
 
