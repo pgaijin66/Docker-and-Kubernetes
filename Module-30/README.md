@@ -1,6 +1,6 @@
 ## Replica set
 
-The pod that we created before does not has its deployment created. As discussed before, the deployments basically passes record of intent for a given k8s object to make sure that it is always running at given time. This is similar to replicas directive that you provide in docker swarm configuration file.
+The pod that we created before does not has its deployment created. As discussed before, the deployments basically passes record of intent for a given k8s object to make sure that it is always running at given time. This is similar to replicas directive that you provide in docker configuration file.
 
 ReplicaSet purpose is to always maintain a given set of replicas of Pods running at any given time.
 

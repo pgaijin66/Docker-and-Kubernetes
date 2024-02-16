@@ -4,7 +4,7 @@
 It is used by docker to manage networking in docker containers.
 
 ### Ingress network
-Is is a service used by docker services when no network is specified or ingress network in docker network ls command is the default network for swarm services.
+Is is a service used by docker services when no network is specified or ingress network in docker network ls command is the default network for docker services.
 
 ## Docker network commands
 ##### create network
@@ -70,7 +70,7 @@ docker container run -d --rm --name nginx --net host nginx
 ```
 
 ### Bridge network
-It uses linux brdige interfaces to provide connectivity to containers and host. This is the default driver for container running on a single host (not in swarm). It createas default linux bridge network called bridge0. Containers automatically connect to tihs if no other network is specified. Use case is isolated networking among containers on single host.
+It uses linux brdige interfaces to provide connectivity to containers and host. This is the default driver for container running on a single host. It createas default linux bridge network called bridge0. Containers automatically connect to tihs if no other network is specified. Use case is isolated networking among containers on single host.
 
 
 create network
@@ -88,12 +88,11 @@ docker container run -d --rm --name my-bridge --net host nginx
 ```
 
 ### Overlay network
-Overlay network driver provides connectivity between containers across multiple docker hosts i.e with docker swarm It uses VXLAN data plan which allows underlying network infrastructure to route data between hosts in a way that is transparent to containers themselves.
+Overlay network driver provides connectivity between containers across multiple docker hosts.
 Automatically configured network interface, bridges etc on each host as needed
-Use case is networking between containers in a swarm
+Use case is networking between containers
 
-Default network setting for swarm
-
+Default network setting
 create network
 ```
 docker network create --driver overlay --attachable my-overlay-network 
@@ -108,7 +107,7 @@ docker network ls
 docker container run -d --rm --name my-overlay --net my-overlay-overlay nginx
 ```
 
-Create service with in docker swarm
+Create service with in docker
 ```
 docker service create --network my-overlay-network --name overlay-service --replicas 3 nginx
 ```
@@ -167,7 +166,7 @@ docker network connect --alias another-alias my-net my-net-nginx3
 
 # Exposing port
 
-Expose container by publishing ports. THis maps port on host swarm hosts to port within the container
+Expose container by publishing ports. 
 
 ```
 docker run -d -p 8080:80 --name nginx_pub nginx
@@ -183,7 +182,7 @@ docker port CONAINTER_ID
 docker ps
 ```
 
-## Publishing ports for services in swarm
+## Publishing ports for services
 
 Mode:
 1. Ingress
